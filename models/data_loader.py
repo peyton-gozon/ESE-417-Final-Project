@@ -1,40 +1,46 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import copy
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 
 class DataLoader:
-    """ Allows for the easy wrangling of the dataset. """
+    """ Allows for the easy and deterministic wrangling of the dataset. """
 
     def __init__(self, source, random_state=None):
-        self.data = pd.read_csv(source, sep=';')
         self.random_state = random_state if random_state is not None else np.random.RandomState(42069)
 
-    def train_test_split(self, train_prop=0.3, random_state=None):
-        rs = random_state if random_state is not None else self.random_state
-        data_copy = copy.copy(self.data)
+        # Read in the data from the csv file and convert it into an X and y matrices
+        data = pd.read_csv(source, sep=';')
 
-        y = data_copy['quality']  # The model output is the quality of the wine.
-        del data_copy['quality']  # Remove the ground truths from the dataset.
+        self.y = data['quality'].to_numpy()  # The model output is the quality of the wine.
+        del data['quality']  # Remove the ground truths from the dataset.
 
-        # the test_train_split function only works on NumPy arrays, and not pandas
-        X = data_copy.to_numpy()
+        self.X = data.to_numpy()
 
+    def train_test_split(self, train_prop=0.3):
         # Perform a train/test split
-        X_test, X_train, y_test, y_train = train_test_split(X, y, random_state=rs, test_size=train_prop)
-
+        X_test, X_train, y_test, y_train = train_test_split(self.X, self.y, random_state=self.random_state,
+                                                            test_size=train_prop)
         return X_test, X_train, y_test, y_train
 
-    def get_all_data(self, separate_ground_truths=True):
-        """ Returns the entire design matrix and ground truths. """
+    def get_all_data(self):
+        """ Returns the design matrix and ground truths. """
+        return self.X, self.y
 
-        data = self.data.to_numpy()
+    def apply_pca_to_dataset(self, n_components=8):
+        """
+        Apply what we've learned from the exploratory data analysis done in `exploring_data.ipynb`. The changes occur
+        in place.
 
-        if separate_ground_truths:
-            X = data[:, :-1]
-            y = data[:, -1]
+        1. Standardize the design matrix.
+        2. Reduce the data down to 8 principal components.
+        """
+        standard_scaler = StandardScaler()
+        X_standardized = standard_scaler.fit_transform(self.X)
 
-            return X, y
-        else:
-            return data
+        pca = PCA(n_components=n_components, random_state=self.random_state)
+        X_pca = pca.fit_transform(X_standardized)
+
+        self.X = X_pca
