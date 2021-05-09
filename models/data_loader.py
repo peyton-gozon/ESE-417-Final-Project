@@ -19,10 +19,10 @@ class DataLoader:
 
         self.X = data.to_numpy()
 
-    def train_test_split(self, train_prop=0.3):
+    def train_test_split(self, test_prop=0.3):
         # Perform a train/test split
         X_test, X_train, y_test, y_train = train_test_split(self.X, self.y, random_state=self.random_state,
-                                                            test_size=train_prop)
+                                                            test_size=test_prop)
         return X_test, X_train, y_test, y_train
 
     def get_all_data(self):
