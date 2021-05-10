@@ -14,7 +14,7 @@ if __name__ == '__main__':
     start_time = time.time()
     # We learned from `exploring_data.ipynb` that PCA with 8 principal components is optimal.
     n_components = 8
-    train_prop = 0.9
+    train_prop = 0.8
 
     # Random state to allow for this to be deterministic.
     random_state = np.random.RandomState(42069)
