@@ -14,7 +14,7 @@ if __name__ == '__main__':
     start_time = time.time()
     # We learned from `exploring_data.ipynb` that PCA with 8 principal components is optimal.
     n_components = 8
-    train_prop = 0.9
+    train_prop = 0.8
 
     # Random state to allow for this to be deterministic.
     random_state = np.random.RandomState(42069)
@@ -29,7 +29,8 @@ if __name__ == '__main__':
 
     print("Loading the data...")
     dl = DataLoader('data/winequality-red.csv', random_state=random_state)
-    X_train, X_test, y_train, y_test = dl.train_test_split(test_prop=0.2)  # 20% test, 72% train, 8% validate.
+    # 20% test, 72% train, 8% validate
+    X_train, X_test, y_train, y_test = dl.train_test_split(test_prop=(1.0-train_prop))
 
     N_train, _ = X_train.shape
     d = n_components
@@ -37,9 +38,9 @@ if __name__ == '__main__':
     parameter_grid = {
         'classifier__n_estimators': np.linspace(50, 500, 10, dtype=int),
         'classifier__max_depth': np.append(np.linspace(d**2, d*(d+3), 9), None),
-        'classifier__criterion': ['entropy'],
-        'classifier__class_weight': ['balanced_subsample'],
-        'classifier__max_features': [2, 3, 4],
+        'classifier__criterion': ['entropy', 'gini'],
+        'classifier__class_weight': ['balanced_subsample', 'balanced'],
+        'classifier__max_features': [2, 3, 4, 'sqrt'],
     }
 
     # 5-fold validation.
